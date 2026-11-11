@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="tr" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MooshGF Mods - Reddedilmiş Minecraft Modlarım</title>
+    <link rel="icon" type="image/png" href="./favicon.png">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- JSZip: Gerçek indirilebilir .mcaddon paketi oluşturmak için -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <!-- Inter ve JetBrains Mono Fontları -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'Segoe UI', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        cf: {
+                            bg: '#121212',
+                            surface: '#18181b',
+                            card: '#1e1e22',
+                            elevated: '#25252a',
+                            border: '#2e2e34',
+                            orange: '#f16436',
+                            orangeHover: '#d95326',
+                            text: '#e4e4e7',
+                            muted: '#a1a1aa',
+                            subtle: '#71717a'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Mat, temiz, keskin ve kesinlikle neon/parlama olmayan özel stiller */
+        body {
+            background-color: #121212;
+            color: #e4e4e7;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Özel ince kaydırma çubuğu */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #121212;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2e2e34;
+            border-radius: 2px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3f3f46;
+        }
+
+        /* CurseForge tarzı aktif sekme alt çizgisi */
+        .tab-active {
+            border-bottom: 2px solid #f16436;
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .tab-inactive {
+            border-bottom: 2px solid transparent;
+            color: #a1a1aa;
+        }
+        .tab-inactive:hover {
+            color: #e4e4e7;
+            border-bottom-color: #3f3f46;
+        }
+
+        /* Dokulu ama mat arka plan deseni (Hero için) */
+        .matte-grid-bg {
+            background-color: #18181b;
+            background-image: radial-gradient(#27272a 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-[#f16436] selection:text-white">
+
+    <!-- Üst Bildirim (Toast) Alanı -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- ÜST NAVİGASYON (NAVBAR) -->
+    <header class="bg-[#18181b] border-b border-[#2e2e34] sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Sol: Logo ve Navigasyon -->
+                <div class="flex items-center gap-8">
+                    <button onclick="navigateTo('home')" class="flex items-center gap-3 text-left focus:outline-none group">
+                        <!-- Keskin hatlı özel MooshGF Amblemi -->
+                        <div class="w-9 h-9 bg-[#25252a] border border-[#2e2e34] rounded flex items-center justify-center group-hover:border-[#f16436] transition-colors">
+                            <svg class="w-5 h-5 text-[#f16436]" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M4 4h6v6H4V4zm10 0h6v6h-6V4zM4 14h6v6H4v-6zm10 3h6v3h-6v-3zm0-3h6v2h-6v-2z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <span class="font-bold text-lg tracking-tight text-white block leading-none">MooshGF <span class="text-[#f16436]">Mods</span></span>
+                            <span class="text-[11px] text-[#71717a] font-mono">BEDROCK ARCHIVE</span>
+                        </div>
+                    </button>
+
+                    <!-- Masaüstü Menü Linkleri -->
+                    <nav class="hidden md:flex items-center gap-1">
+                        <button onclick="navigateTo('home')" id="nav-home" class="px-3.5 py-2 rounded text-sm font-medium text-white bg-[#25252a] transition-colors">
+                            Anasayfa
+                        </button>
+                        <button onclick="navigateTo('project')" id="nav-project" class="px-3.5 py-2 rounded text-sm font-medium text-[#a1a1aa] hover:text-white hover:bg-[#25252a]/50 transition-colors">
+                            Projeler
+                        </button>
+                        <button onclick="navigateTo('upcoming')" id="nav-upcoming" class="px-3.5 py-2 rounded text-sm font-medium text-[#a1a1aa] hover:text-white hover:bg-[#25252a]/50 transition-colors flex items-center gap-2">
+                            <span>Yakında</span>
+                            <span class="text-[10px] px-1.5 py-0.5 bg-[#25252a] border border-[#2e2e34] text-[#a1a1aa] rounded font-mono">Tempest Weather</span>
+                        </button>
+                    </nav>
+                </div>
+
+                <!-- Sağ: YouTube Kanal Linki -->
+                <div class="flex items-center gap-3">
+                    <a href="https://www.youtube.com/@moosh_gf" target="_blank" rel="noopener noreferrer" 
+                       class="inline-flex items-center gap-2 px-3.5 py-2 bg-[#25252a] hover:bg-[#2e2e34] border border-[#2e2e34] text-sm font-medium text-[#e4e4e7] rounded transition-colors">
+                        <svg class="w-4 h-4 text-[#f16436]" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                        </svg>
+                        <span>@moosh_gf</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Mobil Navigasyon Barı -->
+            <div class="flex md:hidden border-t border-[#2e2e34] py-2 gap-2 overflow-x-auto">
+                <button onclick="navigateTo('home')" id="mob-nav-home" class="px-3 py-1.5 rounded text-xs font-medium bg-[#25252a] text-white whitespace-nowrap">
+                    Anasayfa
+                </button>
+                <button onclick="navigateTo('project')" id="mob-nav-project" class="px-3 py-1.5 rounded text-xs font-medium text-[#a1a1aa] whitespace-nowrap">
+                    The Skitter (Mod)
+                </button>
+                <button onclick="navigateTo('upcoming')" id="mob-nav-upcoming" class="px-3 py-1.5 rounded text-xs font-medium text-[#a1a1aa] whitespace-nowrap">
+                    Yakında: Tempest Weather
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ANA İÇERİK ALANI -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- ========================================================= -->
+        <!-- 1. ANASAYFA GÖRÜNÜMÜ                                      -->
+        <!-- ========================================================= -->
+        <section id="view-home" class="space-y-8">
+            
+            <!-- Üst Banner / Hero Alanı -->
+            <div class="matte-grid-bg border border-[#2e2e34] rounded-md p-6 sm:p-8 lg:p-10 relative">
+                <div class="max-w-3xl space-y-4">
+                    <div class="inline-flex items-center gap-2 px-2.5 py-1 bg-[#25252a] border border-[#2e2e34] rounded text-xs font-mono text-[#a1a1aa]">
+                        <span class="w-2 h-2 rounded-full bg-[#f16436]"></span>
+                        <span>MOOSHGF RESMİ MOD ARŞİVİ</span>
+                    </div>
+                    
+                    <h1 class="text-2xl sm:text-4xl font-bold text-white tracking-tight">
+                        Siteme hoş geldin
+                    </h1>
+                    
+                    <p class="text-[#d4d4d8] text-base sm:text-lg leading-relaxed">
+                        Selam Ben MooshGF! Burada curseforgede reddedilen modlarımı paylaşıyorum burayı güncelleyeceğim Tempest Weather Modu gelicek merak etmeyin! 
+                        <span class="inline-block mt-1">
+                            yt:<a href="https://www.youtube.com/@moosh_gf" target="_blank" rel="noopener noreferrer" class="text-[#f16436] hover:underline font-medium ml-1">https://www.youtube.com/@moosh_gf</a>
+                        </span>
+                    </p>
+
+                    <div class="pt-2 flex flex-wrap items-center gap-3">
+                        <button onclick="navigateTo('project')" class="px-5 py-2.5 bg-[#f16436] hover:bg-[#d95326] text-white font-semibold text-sm rounded transition-colors cursor-pointer">
+                            Yayınlanan Modu İncele
+                        </button>
+                        <a href="https://www.youtube.com/@moosh_gf" target="_blank" rel="noopener noreferrer" class="px-4 py-2.5 bg-[#25252a] hover:bg-[#2e2e34] border border-[#2e2e34] text-[#e4e4e7] font-medium text-sm rounded transition-colors">
+                            YouTube Kanalına Git
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filtre / Başlık Çubuğu (CurseForge Liste Görünümü Tarzı) -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#2e2e34] pb-4">
+                <div>
+                    <h2 class="text-lg font-semibold text-white">Projeler ve Eklentiler</h2>
+                    <p class="text-xs text-[#a1a1aa] mt-0.5">Minecraft Bedrock Edition için geliştirilen ve arşivlenen içerikler</p>
+                </div>
+                <div class="flex items-center gap-2 text-xs text-[#a1a1aa]">
+                    <span class="px-2.5 py-1.5 bg-[#1e1e22] border border-[#2e2e34] rounded">Sürüm: <strong class="text-white">26.30</strong></span>
+                    <span class="px-2.5 py-1.5 bg-[#1e1e22] border border-[#2e2e34] rounded">Toplam Proje: <strong class="text-white">2</strong></span>
+                </div>
+            </div>
+
+            <!-- Proje Kartları Listesi -->
+            <div class="space-y-4">
+                
+                <!-- KART 1: The Skitter - Bedrock Port -->
+                <article onclick="navigateTo('project')" class="bg-[#1e1e22] hover:bg-[#25252a] border border-[#2e2e34] hover:border-[#3f3f46] rounded-md p-4 sm:p-5 transition-colors cursor-pointer group">
+                    <div class="flex flex-col sm:flex-row items-start gap-4 sm:gap-5">
+                        <!-- Proje Logosu (logo.jpg) -->
+                        <div class="w-20 h-20 sm:w-24 sm:h-24 rounded bg-[#121212] border border-[#2e2e34] flex-shrink-0 overflow-hidden">
+                            <img src="./logo.jpg" alt="The Skitter - Bedrock Port Logo" 
+                                 onerror="this.onerror=null; this.src='https://placehold.co/96x96/18181b/f16436?text=SKITTER';"
+                                 class="w-full h-full object-cover">
+                        </div>
+
+                        <!-- Orta Bilgi Alanı -->
+                        <div class="flex-grow min-w-0 space-y-1.5">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <h3 class="text-lg sm:text-xl font-bold text-white group-hover:text-[#f16436] transition-colors">
+                                    The Skitter - Bedrock Port
+                                </h3>
+                                <span class="text-xs text-[#a1a1aa]">by <span class="text-[#e4e4e7] font-medium">MooshGF</span></span>
+                            </div>
+
+                            <!-- Küçük alt yazı: Reddedilmiş Mod -->
+                            <div>
+                                <span class="inline-block text-[11px] font-medium text-[#a1a1aa] bg-[#18181b] border border-[#2e2e34] px-2 py-0.5 rounded">
+                                    Reddedilmiş Mod
+                                </span>
+                            </div>
+
+                            <p class="text-sm text-[#a1a1aa] line-clamp-2 pt-1">
+                                Survive a giant procedural spider with advanced AI. Adds a massive procedural spider built from Block Displays that grows through 5 phases, adapts, mines walls, and relentlessly hunts players.
+                            </p>
+
+                            <!-- Alt Meta & Etiketler -->
+                            <div class="flex flex-wrap items-center gap-4 pt-2 text-xs text-[#a1a1aa]">
+                                <span class="inline-flex items-center gap-1.5" title="İndirme Sayısı">
+                                    <svg class="w-3.5 h-3.5 text-[#71717a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                    </svg>
+                                    <span class="font-mono text-[#e4e4e7] download-count-display">0</span> İndirme
+                                </span>
+
+                                <span class="inline-flex items-center gap-1.5" title="Minecraft Sürümü">
+                                    <svg class="w-3.5 h-3.5 text-[#71717a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                                    </svg>
+                                    <span>Bedrock <strong class="text-[#e4e4e7]">26.30</strong></span>
+                                </span>
+
+                                <span class="inline-flex items-center gap-1.5" title="Yorum Sayısı">
+                                    <svg class="w-3.5 h-3.5 text-[#71717a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
+                                    </svg>
+                                    <span class="comment-count-display">0</span> Yorum
+                                </span>
+
+                                <span class="px-2 py-0.5 bg-[#25252a] border border-[#2e2e34] text-[#e4e4e7] rounded font-medium">
+                                    Horror
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Sağ: Hızlı Aksiyon -->
+                        <div class="w-full sm:w-auto flex sm:flex-col items-center sm:items-end justify-between gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#2e2e34]">
+                            <button onclick="event.stopPropagation(); triggerModDownload();" 
+                                    class="mod-download-btn px-4 py-2 bg-[#f16436] hover:bg-[#d95326] text-white text-xs font-semibold rounded transition-colors flex items-center gap-1.5 cursor-pointer">
+                                <svg class="w-3.5 h-3.5 download-btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                </svg>
+                                <span class="download-btn-label">İndir</span>
+                            </button>
+                            <span class="already-downloaded-note hidden text-[11px] font-medium text-[#f16436]">Bu Modu Zaten Yükledin!</span>
+                            <span class="text-[11px] text-[#71717a] group-hover:text-[#a1a1aa]">Detayları Gör &rarr;</span>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- KART 2: Yakında Gelecek Proje (Tempest Weather) -->
+                <article onclick="navigateTo('upcoming')" class="bg-[#18181b] hover:bg-[#1e1e22] border border-[#2e2e34] rounded-md p-4 sm:p-5 transition-colors cursor-pointer">
+                    <div class="flex flex-col sm:flex-row items-start gap-4 sm:gap-5">
+                        <div class="w-20 h-20 sm:w-24 sm:h-24 rounded bg-[#121212] border border-[#2e2e34] flex-shrink-0 flex items-center justify-center">
+                            <svg class="w-9 h-9 text-[#71717a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/>
+                            </svg>
+                        </div>
+                        <div class="flex-grow space-y-1.5">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <h3 class="text-lg font-bold text-[#e4e4e7]">Tempest Weather Mod</h3>
+                                <span class="text-[11px] font-mono px-2 py-0.5 bg-[#25252a] border border-[#2e2e34] text-[#a1a1aa] rounded">GELİŞTİRİLİYOR</span>
+                            </div>
+                            <p class="text-sm text-[#a1a1aa]">
+                                Tempest Weather Modu yakında bu arşivde paylaşılacak. Güncellemeler ve geliştirme videoları için YouTube kanalını takip edebilirsiniz.
+                            </p>
+                        </div>
+                    </div>
+                </article>
+
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- 2. PROJE DETAY SAYFASI (The Skitter - Bedrock Port)       -->
+        <!-- ========================================================= -->
+        <section id="view-project" class="hidden space-y-6">
+            
+            <!-- Breadcrumb (Üst Yol) -->
+            <nav class="flex items-center gap-2 text-xs text-[#a1a1aa]">
+                <button onclick="navigateTo('home')" class="hover:text-white transition-colors">Anasayfa</button>
+                <span>/</span>
+                <button onclick="navigateTo('home')" class="hover:text-white transition-colors">Projeler</button>
+                <span>/</span>
+                <span class="text-white font-medium">The Skitter - Bedrock Port</span>
+            </nav>
+
+            <!-- Proje Üst Başlık Kartı (CurseForge Project Header) -->
+            <div class="bg-[#18181b] border border-[#2e2e34] rounded-md p-5 sm:p-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div class="flex items-start sm:items-center gap-4 sm:gap-5">
+                        <!-- Proje Logosu (logo.jpg) -->
+                        <div class="w-20 h-20 sm:w-24 sm:h-24 rounded bg-[#121212] border border-[#2e2e34] flex-shrink-0 overflow-hidden">
+                            <img src="./logo.jpg" alt="The Skitter - Bedrock Port" 
+                                 onerror="this.onerror=null; this.src='https://placehold.co/96x96/18181b/f16436?text=SKITTER';"
+                                 class="w-full h-full object-cover">
+                        </div>
+
+                        <div class="space-y-1">
+                            <h1 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+                                The Skitter - Bedrock Port
+                            </h1>
+                            <!-- Küçük yazı: Reddedilmiş Mod -->
+                            <p class="text-xs font-medium text-[#a1a1aa]">
+                                Reddedilmiş Mod
+                            </p>
+
+                            <div class="flex flex-wrap items-center gap-3 pt-2 text-xs text-[#a1a1aa]">
+                                <span>Geliştirici: <strong class="text-white">MooshGF</strong></span>
+                                <span class="text-[#3f3f46]">•</span>
+                                <span>Sürüm: <strong class="text-white font-mono">26.30</strong></span>
+                                <span class="text-[#3f3f46]">•</span>
+                                <span class="px-2 py-0.5 bg-[#25252a] border border-[#2e2e34] text-[#e4e4e7] rounded font-medium">Horror</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sağ İndirme Butonu -->
+                    <div class="flex flex-col sm:items-end gap-2">
+                        <button onclick="triggerModDownload()" 
+                                class="mod-download-btn w-full sm:w-auto px-6 py-3 bg-[#f16436] hover:bg-[#d95326] text-white font-semibold text-sm rounded transition-colors flex items-center justify-center gap-2 cursor-pointer">
+                            <svg class="w-4 h-4 download-btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                            </svg>
+                            <span class="download-btn-label">İndir (.mcaddon)</span>
+                        </button>
+                        <span class="already-downloaded-note hidden text-xs font-medium text-[#f16436]">
+                            Bu Modu Zaten Yükledin!
+                        </span>
+                    </div>
+                </div>
+
+                <!-- CurseForge Sekmeler (Description, Files, Comments) -->
+                <div class="flex items-center gap-6 border-t border-[#2e2e34] mt-6 pt-1 overflow-x-auto">
+                    <button onclick="switchProjectTab('description')" id="tab-btn-description" class="py-3 text-sm tab-active whitespace-nowrap cursor-pointer">
+                        Açıklama
+                    </button>
+                    <button onclick="switchProjectTab('files')" id="tab-btn-files" class="py-3 text-sm tab-inactive whitespace-nowrap cursor-pointer">
+                        Dosyalar (1)
+                    </button>
+                    <button onclick="switchProjectTab('comments')" id="tab-btn-comments" class="py-3 text-sm tab-inactive whitespace-nowrap flex items-center gap-1.5 cursor-pointer">
+                        <span>Yorumlar</span>
+                        <span class="px-1.5 py-0.5 text-[11px] font-mono bg-[#25252a] rounded text-[#e4e4e7] comment-count-display">0</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- İki Sütunlu Proje Düzeni: Sol Ana İçerik + Sağ Sidebar -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                
+                <!-- SOL ANA İÇERİK ALANI (8 Sütun) -->
+                <div class="lg:col-span-8 space-y-6">
+                    
+                    <!-- SEKME 1: AÇIKLAMA (Tam ve Eksiksiz Metin) -->
+                    <div id="tab-content-description" class="bg-[#18181b] border border-[#2e2e34] rounded-md p-6 sm:p-8 space-y-6 text-[#d4d4d8] text-sm sm:text-[15px] leading-relaxed">
+                        <div class="space-y-3">
+                            <div class="inline-block px-2.5 py-1 bg-[#25252a] border border-[#2e2e34] rounded text-xs font-mono text-white">
+                                Bedrock Port
+                            </div>
+                            <p class="text-base font-medium text-white">
+                                Survive a giant procedural spider with advanced AI.
+                            </p>
+                            <p class="text-xs sm:text-sm text-[#a1a1aa] break-all">
+                                Original: <a href="https://www.curseforge.com/minecraft/mc-mods/the-skitter" target="_blank" rel="noopener noreferrer" class="text-[#f16436] hover:underline">https://www.curseforge.com/minecraft/mc-mods/the-skitter</a>
+                            </p>
+                            <p>
+                                The Skitter adds a massive procedural spider that grows, adapts, and relentlessly hunts players across your world. It isn't just another boss—it behaves like a persistent predator with advanced movement, hunting, and survival mechanics.
+                            </p>
+                        </div>
+
+                        <hr class="border-[#2e2e34]">
+
+                        <!-- Features -->
+                        <div class="space-y-4">
+                            <h2 class="text-xl font-bold text-white">Features</h2>
+                            
+                            <div class="space-y-2">
+                                <h3 class="text-base font-semibold text-white">Procedural Creature</h3>
+                                <p>The Creature is built entirely from procedural Block Displays instead of a traditional entity model.</p>
+                                <p class="text-[#a1a1aa] text-xs uppercase tracking-wider font-semibold pt-1">Features include:</p>
+                                <ul class="list-disc list-inside space-y-1 text-[#d4d4d8] pl-1">
+                                    <li>Fully procedural FABRIK IK legs</li>
+                                    <li>Speed-matched walking and galloping animations</li>
+                                    <li>Spring-based body movement</li>
+                                    <li>Dynamic terrain tilt</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <hr class="border-[#2e2e34]">
+
+                        <!-- Growth System -->
+                        <div class="space-y-3">
+                            <h2 class="text-xl font-bold text-white">Growth System</h2>
+                            <p>The Creature evolves through <strong>5 growth phases</strong>.</p>
+                            <ul class="list-disc list-inside space-y-1 pl-1">
+                                <li>Starts at roughly <strong>3 blocks tall</strong></li>
+                                <li>Reaches over <strong>11 blocks</strong> in the final phase</li>
+                                <li>Grows by hunting mobs</li>
+                            </ul>
+                            <p class="text-[#a1a1aa] text-xs uppercase tracking-wider font-semibold pt-1">Each phase increases:</p>
+                            <ul class="list-disc list-inside space-y-1 pl-1">
+                                <li>Health</li>
+                                <li>Damage</li>
+                                <li>Detection range</li>
+                                <li>Attack reach</li>
+                                <li>Movement speed</li>
+                            </ul>
+                            <div class="bg-[#1e1e22] border border-[#2e2e34] rounded p-3.5 text-xs sm:text-sm space-y-1 font-mono text-[#e4e4e7]">
+                                <div>• Health scales from <strong>60 HP</strong> to <strong>230 HP</strong>.</div>
+                                <div>• Detection radius increases from <strong>30</strong> to <strong>115 blocks</strong>.</div>
+                            </div>
+                        </div>
+
+                        <hr class="border-[#2e2e34]">
+
+                        <!-- Hunting AI -->
+                        <div class="space-y-3">
+                            <h2 class="text-xl font-bold text-white">Hunting AI</h2>
+                            <p>Players are always the highest priority target.</p>
+                            
+                            <p class="text-[#a1a1aa] text-xs uppercase tracking-wider font-semibold pt-1">Behavior includes:</p>
+                            <ul class="list-disc list-inside space-y-1 pl-1">
+                                <li>Remembers players that attacked it</li>
+                                <li>Hunts nearby hostile and passive mobs</li>
+                                <li>Requires line of sight before attacking</li>
+                            </ul>
+
+                            <p class="text-[#a1a1aa] text-xs uppercase tracking-wider font-semibold pt-2">Mob attacks:</p>
+                            <ul class="list-disc list-inside space-y-1 pl-1">
+                                <li>Captures prey with web</li>
+                                <li>Pulls victims toward itself</li>
+                                <li>Eats them to continue growing</li>
+                            </ul>
+
+                            <p class="text-[#a1a1aa] text-xs uppercase tracking-wider font-semibold pt-2">Player attacks:</p>
+                            <ul class="list-disc list-inside space-y-1 pl-1">
+                                <li>Heavy melee attacks with knockback</li>
+                                <li>30% chance to grab players in its jaws</li>
+                                <li>Escape by landing 3 successful hits</li>
+                                <li>45% chance to inflict Poison for 3–5 seconds</li>
+                            </ul>
+
+                            <p class="pt-1 text-[#e4e4e7]">
+                                Shields block all attacks until Phase 5, where powerful strikes can break through defensive positioning.
+                            </p>
+                        </div>
+
+                        <hr class="border-[#2e2e34]">
+
+                        <!-- Siege Abilities -->
+                        <div class="space-y-3">
+                            <h2 class="text-xl font-bold text-white">Siege Abilities</h2>
+                            <p>Unlocked from Phase 3 onward.</p>
+
+                            <p class="text-[#a1a1aa] text-xs uppercase tracking-wider font-semibold pt-1">Abilities include:</p>
+                            <ul class="list-disc list-inside space-y-1 pl-1">
+                                <li>Mines through walls, floors, and ceilings</li>
+                                <li>Player-like mining animations</li>
+                                <li>Cannot mine obsidian</li>
+                            </ul>
+
+                            <p class="text-[#a1a1aa] text-xs uppercase tracking-wider font-semibold pt-2">Power Jump:</p>
+                            <ul class="list-disc list-inside space-y-1 pl-1">
+                                <li>Crouch wind-up</li>
+                                <li>Camera shake</li>
+                                <li>Ground impact</li>
+                                <li>Optional block destruction during flight</li>
+                            </ul>
+
+                            <p class="text-[#a1a1aa] text-xs uppercase tracking-wider font-semibold pt-2">Anti-tower behavior:</p>
+                            <ul class="list-disc list-inside space-y-1 pl-1">
+                                <li>Jumps at nearby players</li>
+                                <li>Pulls distant players down using webs</li>
+                                <li>Sneaking does not prevent web pulls</li>
+                            </ul>
+                        </div>
+
+                        <hr class="border-[#2e2e34]">
+
+                        <!-- Adaptive Behavior -->
+                        <div class="space-y-3">
+                            <h2 class="text-xl font-bold text-white">Adaptive Behavior</h2>
+                            <p>The Creature is designed to feel unpredictable.</p>
+                            <p class="text-[#a1a1aa] text-xs uppercase tracking-wider font-semibold pt-1">Examples include:</p>
+                            <ul class="list-disc list-inside space-y-1 pl-1">
+                                <li>Freezes when first spotted</li>
+                                <li>Slowly stalks its target</li>
+                                <li>Performs false charges</li>
+                                <li>Searches the player's last known position</li>
+                                <li>Uses sound cues while tracking</li>
+                                <li>Occasionally retreats before attacking again</li>
+                                <li>Stores grudges against players</li>
+                                <li>Ambient sculk-like clicking sounds</li>
+                                <li>Feeding roars</li>
+                            </ul>
+                        </div>
+
+                        <hr class="border-[#2e2e34]">
+
+                        <!-- Escape Mechanic -->
+                        <div class="space-y-3">
+                            <h2 class="text-xl font-bold text-white">Escape Mechanic</h2>
+                            <p>At 10% health, the Creature attempts to survive.</p>
+                            <p class="text-[#a1a1aa] text-xs uppercase tracking-wider font-semibold pt-1">It will:</p>
+                            <ul class="list-disc list-inside space-y-1 pl-1">
+                                <li>Sprint away</li>
+                                <li>Burrow underground</li>
+                                <li>Disappear temporarily</li>
+                                <li>Return roughly 30 seconds later at full health</li>
+                            </ul>
+                            <p class="text-[#a1a1aa] text-xs uppercase tracking-wider font-semibold pt-2">Final Phase death causes:</p>
+                            <ul class="list-disc list-inside space-y-1 pl-1">
+                                <li>Cobweb explosion</li>
+                                <li>3–5 venomous spiderlings</li>
+                                <li>Spiderlings can climb walls</li>
+                            </ul>
+                        </div>
+
+                        <hr class="border-[#2e2e34]">
+
+                        <!-- Commands -->
+                        <div class="space-y-3">
+                            <h2 class="text-xl font-bold text-white">Commands</h2>
+                            <p>Available commands (kopyalamak için tıklayın):</p>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                                <button onclick="copyCommand('/spider summon 1')" class="text-left px-3 py-2 bg-[#121212] hover:bg-[#25252a] border border-[#2e2e34] rounded font-mono text-xs text-[#e4e4e7] flex items-center justify-between transition-colors cursor-pointer">
+                                    <span>/spider summon &lt;1-5&gt;</span>
+                                    <span class="text-[10px] text-[#71717a]">Kopyala</span>
+                                </button>
+                                <button onclick="copyCommand('/spider remove')" class="text-left px-3 py-2 bg-[#121212] hover:bg-[#25252a] border border-[#2e2e34] rounded font-mono text-xs text-[#e4e4e7] flex items-center justify-between transition-colors cursor-pointer">
+                                    <span>/spider remove</span>
+                                    <span class="text-[10px] text-[#71717a]">Kopyala</span>
+                                </button>
+                                <button onclick="copyCommand('/spider hunt')" class="text-left px-3 py-2 bg-[#121212] hover:bg-[#25252a] border border-[#2e2e34] rounded font-mono text-xs text-[#e4e4e7] flex items-center justify-between transition-colors cursor-pointer">
+                                    <span>/spider hunt</span>
+                                    <span class="text-[10px] text-[#71717a]">Kopyala</span>
+                                </button>
+                                <button onclick="copyCommand('/spider phase')" class="text-left px-3 py-2 bg-[#121212] hover:bg-[#25252a] border border-[#2e2e34] rounded font-mono text-xs text-[#e4e4e7] flex items-center justify-between transition-colors cursor-pointer">
+                                    <span>/spider phase</span>
+                                    <span class="text-[10px] text-[#71717a]">Kopyala</span>
+                                </button>
+                                <button onclick="copyCommand('/spider status')" class="text-left px-3 py-2 bg-[#121212] hover:bg-[#25252a] border border-[#2e2e34] rounded font-mono text-xs text-[#e4e4e7] flex items-center justify-between transition-colors cursor-pointer">
+                                    <span>/spider status</span>
+                                    <span class="text-[10px] text-[#71717a]">Kopyala</span>
+                                </button>
+                                <button onclick="copyCommand('/spider scale')" class="text-left px-3 py-2 bg-[#121212] hover:bg-[#25252a] border border-[#2e2e34] rounded font-mono text-xs text-[#e4e4e7] flex items-center justify-between transition-colors cursor-pointer">
+                                    <span>/spider scale</span>
+                                    <span class="text-[10px] text-[#71717a]">Kopyala</span>
+                                </button>
+                                <button onclick="copyCommand('/spider reload')" class="text-left px-3 py-2 bg-[#121212] hover:bg-[#25252a] border border-[#2e2e34] rounded font-mono text-xs text-[#e4e4e7] flex items-center justify-between transition-colors cursor-pointer">
+                                    <span>/spider reload</span>
+                                    <span class="text-[10px] text-[#71717a]">Kopyala</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <hr class="border-[#2e2e34]">
+
+                        <!-- Multiplayer -->
+                        <div class="space-y-2">
+                            <h2 class="text-xl font-bold text-white">Multiplayer</h2>
+                            <p>Spider Hunt supports multiplayer worlds.</p>
+                            <p>The Creature behaves consistently across players while remembering targets and continuing its hunt.</p>
+                        </div>
+
+                        <div class="bg-[#1e1e22] border-l-2 border-[#f16436] p-4 rounded-r">
+                            <p class="font-semibold text-white">Good luck.</p>
+                            <p class="text-[#a1a1aa] text-sm mt-0.5">You'll know it's nearby before you ever see it.</p>
+                        </div>
+                    </div>
+
+                    <!-- SEKME 2: DOSYALAR -->
+                    <div id="tab-content-files" class="hidden bg-[#18181b] border border-[#2e2e34] rounded-md p-6 space-y-4">
+                        <div class="flex items-center justify-between border-b border-[#2e2e34] pb-3">
+                            <h2 class="text-lg font-bold text-white">Ana Dosyalar</h2>
+                            <span class="text-xs text-[#a1a1aa]">Minecraft Bedrock 26.30</span>
+                        </div>
+
+                        <div class="bg-[#1e1e22] border border-[#2e2e34] rounded p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div class="space-y-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="px-2 py-0.5 bg-[#25252a] border border-[#2e2e34] text-[11px] font-mono text-[#f16436] rounded">RELEASE</span>
+                                    <span class="font-mono text-sm font-semibold text-white">The-Skitter-Bedrock-Port-Demo.mcaddon</span>
+                                </div>
+                                <div class="flex flex-wrap items-center gap-3 text-xs text-[#a1a1aa]">
+                                    <span>Sürüm: <strong class="text-white">26.30</strong></span>
+                                    <span>•</span>
+                                    <span>Tür: <strong class="text-white">Behavior + Resource Pack</strong></span>
+                                    <span>•</span>
+                                    <span>İndirme: <strong class="text-white download-count-display">0</strong></span>
+                                </div>
+                            </div>
+
+                            <button onclick="triggerModDownload()" 
+                                    class="mod-download-btn px-4 py-2 bg-[#f16436] hover:bg-[#d95326] text-white text-xs font-semibold rounded transition-colors flex items-center justify-center gap-1.5 cursor-pointer">
+                                <span class="download-btn-label">İndir</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- SEKME 3 / ALT BÖLÜM: YORUMLAR (Her zaman erişilebilir + sekmeden odaklanabilir) -->
+                    <div id="comments-section" class="bg-[#18181b] border border-[#2e2e34] rounded-md p-6 space-y-6">
+                        <div class="flex items-center justify-between border-b border-[#2e2e34] pb-3">
+                            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                                <span>Yorumlar</span>
+                                <span class="text-xs font-mono px-2 py-0.5 bg-[#25252a] border border-[#2e2e34] rounded text-[#e4e4e7] comment-count-display">0</span>
+                            </h2>
+                            <span class="text-xs text-[#71717a]">Yorumlar kalıcı olarak kaydedilir</span>
+                        </div>
+
+                        <!-- Yorum Yazma Formu -->
+                        <form id="comment-form" onsubmit="handleCommentSubmit(event)" class="space-y-3 bg-[#1e1e22] border border-[#2e2e34] p-4 rounded">
+                            <div>
+                                <label for="comment-author" class="block text-xs font-medium text-[#a1a1aa] mb-1">Kullanıcı Adı</label>
+                                <input type="text" id="comment-author" required maxlength="32" placeholder="Adınız (Örn: Steve)" 
+                                       class="w-full sm:w-64 px-3 py-2 bg-[#121212] border border-[#2e2e34] focus:border-[#f16436] focus:outline-none rounded text-sm text-white placeholder-[#71717a]">
+                            </div>
+                            <div>
+                                <label for="comment-text" class="block text-xs font-medium text-[#a1a1aa] mb-1">Yorumunuz</label>
+                                <textarea id="comment-text" required rows="3" maxlength="500" placeholder="Mod hakkındaki düşüncelerinizi yazın..." 
+                                          class="w-full px-3 py-2 bg-[#121212] border border-[#2e2e34] focus:border-[#f16436] focus:outline-none rounded text-sm text-white placeholder-[#71717a]"></textarea>
+                            </div>
+                            <div class="flex justify-end">
+                                <button type="submit" class="px-4 py-2 bg-[#f16436] hover:bg-[#d95326] text-white text-xs font-semibold rounded transition-colors cursor-pointer">
+                                    Yorum Gönder
+                                </button>
+                            </div>
+                        </form>
+
+                        <!-- Kaydedilen Yorumlar Listesi -->
+                        <div id="comments-list" class="space-y-3">
+                            <div class="text-center py-6 text-xs text-[#71717a] border border-dashed border-[#2e2e34] rounded">
+                                Henüz yorum yapılmamış. İlk yorumu sen bırak!
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- SAĞ SİDEBAR (4 Sütun - CurseForge Proje Künyesi) -->
+                <aside class="lg:col-span-4 space-y-5">
+                    
+                    <!-- Proje Hakkında Kutusu -->
+                    <div class="bg-[#18181b] border border-[#2e2e34] rounded-md p-5 space-y-4">
+                        <h3 class="text-sm font-bold text-white uppercase tracking-wider border-b border-[#2e2e34] pb-2.5">
+                            Proje Bilgileri
+                        </h3>
+
+                        <dl class="space-y-3 text-xs">
+                            <div class="flex items-center justify-between">
+                                <dt class="text-[#a1a1aa]">Durum</dt>
+                                <dd class="font-medium text-[#e4e4e7] bg-[#25252a] border border-[#2e2e34] px-2 py-0.5 rounded">Reddedilmiş Mod</dd>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <dt class="text-[#a1a1aa]">Oyun Sürümü</dt>
+                                <dd class="font-mono font-semibold text-white">26.30</dd>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <dt class="text-[#a1a1aa]">Toplam İndirme</dt>
+                                <dd class="font-mono font-semibold text-white download-count-display">0</dd>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <dt class="text-[#a1a1aa]">Etiket</dt>
+                                <dd class="font-medium text-white bg-[#25252a] border border-[#2e2e34] px-2 py-0.5 rounded">Horror</dd>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <dt class="text-[#a1a1aa]">Dosya</dt>
+                                <dd class="font-mono text-[#e4e4e7] truncate max-w-[170px]" title="The-Skitter-Bedrock-Port-Demo.mcaddon">The-Skitter...mcaddon</dd>
+                            </div>
+                        </dl>
+                    </div>
+
+                    <!-- Yapımcı Kutusu -->
+                    <div class="bg-[#18181b] border border-[#2e2e34] rounded-md p-5 space-y-3">
+                        <h3 class="text-sm font-bold text-white uppercase tracking-wider border-b border-[#2e2e34] pb-2.5">
+                            Yapımcı
+                        </h3>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 rounded bg-[#25252a] border border-[#2e2e34] flex items-center justify-center font-bold text-sm text-[#f16436]">
+                                    M
+                                </div>
+                                <div>
+                                    <div class="text-sm font-semibold text-white">MooshGF</div>
+                                    <div class="text-[11px] text-[#a1a1aa]">Mod Geliştiricisi</div>
+                                </div>
+                            </div>
+                            <a href="https://www.youtube.com/@moosh_gf" target="_blank" rel="noopener noreferrer" 
+                               class="px-3 py-1.5 bg-[#25252a] hover:bg-[#2e2e34] border border-[#2e2e34] rounded text-xs font-medium text-white transition-colors">
+                                YouTube
+                            </a>
+                        </div>
+                    </div>
+
+                </aside>
+
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- 3. YAKINDA GELECEK PROJE GÖRÜNÜMÜ (Tempest Weather)       -->
+        <!-- ========================================================= -->
+        <section id="view-upcoming" class="hidden space-y-6">
+            <div class="bg-[#18181b] border border-[#2e2e34] rounded-md p-6 sm:p-8 max-w-3xl space-y-4">
+                <span class="inline-block text-xs font-mono px-2.5 py-1 bg-[#25252a] border border-[#2e2e34] text-[#f16436] rounded">
+                    YAKINDA GELİYOR
+                </span>
+                <h1 class="text-2xl sm:text-3xl font-bold text-white">Tempest Weather Mod</h1>
+                <p class="text-sm sm:text-base text-[#d4d4d8] leading-relaxed">
+                    Selam Ben MooshGF! Tempest Weather Modu üzerinde çalışmalarım devam ediyor, çok yakında bu sayfadan indirilebilir olacak. Duyurular için YouTube kanalımı takip edebilirsiniz.
+                </p>
+                <div class="pt-2 flex flex-wrap gap-3">
+                    <a href="https://www.youtube.com/@moosh_gf" target="_blank" rel="noopener noreferrer" 
+                       class="px-4 py-2 bg-[#f16436] hover:bg-[#d95326] text-white text-sm font-semibold rounded transition-colors">
+                        YouTube: @moosh_gf
+                    </a>
+                    <button onclick="navigateTo('home')" class="px-4 py-2 bg-[#25252a] hover:bg-[#2e2e34] border border-[#2e2e34] text-sm font-medium text-white rounded transition-colors cursor-pointer">
+                        Anasayfaya Dön
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ALT BİLGİ (FOOTER) -->
+    <footer class="bg-[#18181b] border-t border-[#2e2e34] mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#71717a]">
+            <div>
+                <span class="text-[#a1a1aa] font-medium">MooshGF Mods</span> — CurseForge'da reddedilen Minecraft Bedrock modları arşivi.
+            </div>
+            <div class="flex items-center gap-4">
+                <button onclick="navigateTo('home')" class="hover:text-[#e4e4e7] transition-colors">Anasayfa</button>
+                <button onclick="navigateTo('project')" class="hover:text-[#e4e4e7] transition-colors">The Skitter</button>
+                <a href="https://www.youtube.com/@moosh_gf" target="_blank" rel="noopener noreferrer" class="hover:text-[#f16436] transition-colors">YouTube (@moosh_gf)</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- UYGULAMA MANTIĞI (Navigasyon, Tek Seferlik İndirme Kilidi & Kalıcı Yorumlar) -->
+    <script>
+        // Depolama Anahtarları
+        const STORAGE_KEYS = {
+            DOWNLOAD_COUNT: 'mooshgf_skitter_download_count_v1',
+            ALREADY_DOWNLOADED: 'mooshgf_skitter_downloaded',
+            COMMENTS: 'mooshgf_skitter_comments_v1'
+        };
+
+        // Mod Dosyası Yolu
+        const MOD_FILE_URL = './The-Skitter-Bedrock-Port-Demo.mcaddon';
+        const MOD_FILE_NAME = 'The-Skitter-Bedrock-Port-Demo.mcaddon';
+
+        // Bildirim (Toast) Gösterici
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            const borderClass = type === 'warning' ? 'border-[#f16436]' : 'border-[#3f3f46]';
+            toast.className = `pointer-events-auto bg-[#1e1e22] border ${borderClass} text-white text-xs sm:text-sm px-4 py-3 rounded shadow-lg flex items-center gap-2.5 transition-opacity duration-200`;
+            toast.innerHTML = `
+                <span class="w-2 h-2 rounded-full bg-[#f16436] flex-shrink-0"></span>
+                <span>${escapeHtml(message)}</span>
+            `;
+
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 200);
+            }, 3200);
+        }
+
+        // XSS Koruması için HTML Kaçış Fonksiyonu
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        // Sayfa Görünümleri Arası Geçiş (Anasayfa / Proje / Yakında)
+        window.navigateTo = function(viewName) {
+            const views = ['home', 'project', 'upcoming'];
+            views.forEach(v => {
+                const el = document.getElementById(`view-${v}`);
+                const navBtn = document.getElementById(`nav-${v}`);
+                const mobBtn = document.getElementById(`mob-nav-${v}`);
+
+                if (el) {
+                    if (v === viewName) {
+                        el.classList.remove('hidden');
+                    } else {
+                        el.classList.add('hidden');
+                    }
+                }
+
+                if (navBtn) {
+                    if (v === viewName) {
+                        navBtn.classList.add('bg-[#25252a]', 'text-white');
+                        navBtn.classList.remove('text-[#a1a1aa]');
+                    } else {
+                        navBtn.classList.remove('bg-[#25252a]', 'text-white');
+                        navBtn.classList.add('text-[#a1a1aa]');
+                    }
+                }
+
+                if (mobBtn) {
+                    if (v === viewName) {
+                        mobBtn.classList.add('bg-[#25252a]', 'text-white');
+                        mobBtn.classList.remove('text-[#a1a1aa]');
+                    } else {
+                        mobBtn.classList.remove('bg-[#25252a]', 'text-white');
+                        mobBtn.classList.add('text-[#a1a1aa]');
+                    }
+                }
+            });
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        // Proje Sayfası Sekme Değiştirici
+        window.switchProjectTab = function(tabName) {
+            const descTab = document.getElementById('tab-content-description');
+            const filesTab = document.getElementById('tab-content-files');
+            const commentsSec = document.getElementById('comments-section');
+
+            const btnDesc = document.getElementById('tab-btn-description');
+            const btnFiles = document.getElementById('tab-btn-files');
+            const btnComments = document.getElementById('tab-btn-comments');
+
+            [btnDesc, btnFiles, btnComments].forEach(btn => {
+                if (btn) {
+                    btn.classList.remove('tab-active');
+                    btn.classList.add('tab-inactive');
+                }
+            });
+
+            if (tabName === 'description') {
+                descTab.classList.remove('hidden');
+                filesTab.classList.add('hidden');
+                btnDesc.classList.add('tab-active');
+                btnDesc.classList.remove('tab-inactive');
+            } else if (tabName === 'files') {
+                descTab.classList.add('hidden');
+                filesTab.classList.remove('hidden');
+                btnFiles.classList.add('tab-active');
+                btnFiles.classList.remove('tab-inactive');
+            } else if (tabName === 'comments') {
+                descTab.classList.remove('hidden');
+                filesTab.classList.add('hidden');
+                btnComments.classList.add('tab-active');
+                btnComments.classList.remove('tab-inactive');
+                if (commentsSec) {
+                    commentsSec.scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+        };
+
+        // İndirme Sayacı ve Buton Durumunu Güncelleme
+        function updateDownloadUI() {
+            let count = parseInt(localStorage.getItem(STORAGE_KEYS.DOWNLOAD_COUNT) || '0', 10);
+            if (isNaN(count) || count < 0) count = 0;
+
+            const alreadyDownloaded = localStorage.getItem(STORAGE_KEYS.ALREADY_DOWNLOADED) === 'true';
+
+            document.querySelectorAll('.download-count-display').forEach(el => {
+                el.textContent = count.toString();
+            });
+
+            document.querySelectorAll('.mod-download-btn').forEach(btn => {
+                const label = btn.querySelector('.download-btn-label');
+                if (alreadyDownloaded) {
+                    btn.classList.remove('bg-[#f16436]', 'hover:bg-[#d95326]');
+                    btn.classList.add('bg-[#25252a]', 'border', 'border-[#3f3f46]', 'text-[#a1a1aa]');
+                    if (label) label.textContent = 'Bu Modu Zaten Yükledin!';
+                }
+            });
+
+            document.querySelectorAll('.already-downloaded-note').forEach(note => {
+                if (alreadyDownloaded) {
+                    note.classList.remove('hidden');
+                } else {
+                    note.classList.add('hidden');
+                }
+            });
+        }
+
+        // Tek Seferlik Mod İndirme Fonksiyonu
+        window.triggerModDownload = function() {
+            const alreadyDownloaded = localStorage.getItem(STORAGE_KEYS.ALREADY_DOWNLOADED) === 'true';
+
+            if (alreadyDownloaded) {
+                showToast('Bu Modu Zaten Yükledin!', 'warning');
+                updateDownloadUI();
+                return;
+            }
+
+            // İlk indirme: Sayacı 1 artır ve kilidi kaydet
+            let currentCount = parseInt(localStorage.getItem(STORAGE_KEYS.DOWNLOAD_COUNT) || '0', 10);
+            if (isNaN(currentCount) || currentCount < 0) currentCount = 0;
+
+            const newCount = currentCount + 1;
+            localStorage.setItem(STORAGE_KEYS.DOWNLOAD_COUNT, newCount.toString());
+            localStorage.setItem(STORAGE_KEYS.ALREADY_DOWNLOADED, 'true');
+
+            updateDownloadUI();
+            showToast('The-Skitter-Bedrock-Port-Demo.mcaddon indiriliyor...');
+
+            // Dosya indirmeyi tetikle
+            const link = document.createElement('a');
+            link.href = MOD_FILE_URL;
+            link.setAttribute('download', MOD_FILE_NAME);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+
+        // Komut Kopyalama (execCommand uyumlu)
+        window.copyCommand = function(cmd) {
+            const tempInput = document.createElement('input');
+            tempInput.value = cmd;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            try {
+                document.execCommand('copy');
+                showToast(`Komut kopyalandı: ${cmd}`);
+            } catch (e) {
+                showToast('Komut kopyalanamadı.');
+            }
+            document.body.removeChild(tempInput);
+        };
+
+        // Kaydedilen Yorumları Yükle ve Ekrana Çiz
+        function loadAndRenderComments() {
+            let comments = [];
+            try {
+                const raw = localStorage.getItem(STORAGE_KEYS.COMMENTS);
+                if (raw) comments = JSON.parse(raw);
+                if (!Array.isArray(comments)) comments = [];
+            } catch (e) {
+                comments = [];
+            }
+
+            document.querySelectorAll('.comment-count-display').forEach(el => {
+                el.textContent = comments.length.toString();
+            });
+
+            const listEl = document.getElementById('comments-list');
+            if (!listEl) return;
+
+            if (comments.length === 0) {
+                listEl.innerHTML = `
+                    <div class="text-center py-6 text-xs text-[#71717a] border border-dashed border-[#2e2e34] rounded">
+                        Henüz yorum yapılmamış. İlk yorumu sen bırak!
+                    </div>
+                `;
+                return;
+            }
+
+            listEl.innerHTML = comments.map(c => `
+                <div class="bg-[#1e1e22] border border-[#2e2e34] rounded p-4 space-y-1.5">
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-6 h-6 rounded bg-[#25252a] border border-[#2e2e34] flex items-center justify-center text-xs font-bold text-[#f16436]">
+                                ${escapeHtml(c.author.charAt(0).toUpperCase())}
+                            </span>
+                            <span class="text-xs sm:text-sm font-semibold text-white">${escapeHtml(c.author)}</span>
+                        </div>
+                        <span class="text-[11px] font-mono text-[#71717a]">${escapeHtml(c.date)}</span>
+                    </div>
+                    <p class="text-xs sm:text-sm text-[#d4d4d8] whitespace-pre-line pl-8">${escapeHtml(c.text)}</p>
+                </div>
+            `).join('');
+        }
+
+        // Yeni Yorum Gönderme ve Kaydetme
+        window.handleCommentSubmit = function(event) {
+            event.preventDefault();
+            const authorInput = document.getElementById('comment-author');
+            const textInput = document.getElementById('comment-text');
+
+            const author = authorInput.value.trim();
+            const text = textInput.value.trim();
+
+            if (!author || !text) return;
+
+            let comments = [];
+            try {
+                const raw = localStorage.getItem(STORAGE_KEYS.COMMENTS);
+                if (raw) comments = JSON.parse(raw);
+                if (!Array.isArray(comments)) comments = [];
+            } catch (e) {
+                comments = [];
+            }
+
+            const now = new Date();
+            const formattedDate = now.toLocaleDateString('tr-TR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            comments.unshift({
+                id: Date.now(),
+                author: author,
+                text: text,
+                date: formattedDate
+            });
+
+            localStorage.setItem(STORAGE_KEYS.COMMENTS, JSON.stringify(comments));
+            textInput.value = '';
+            loadAndRenderComments();
+            showToast('Yorumunuz kaydedildi!');
+        };
+
+        // Sayfa Yüklendiğinde Başlat
+        document.addEventListener('DOMContentLoaded', () => {
+            updateDownloadUI();
+            loadAndRenderComments();
+        });
+    </script>
+</body>
+</html>
